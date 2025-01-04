@@ -8,6 +8,14 @@ g_state = gamestates.game
 frame_x = { 8, 32, 56, 80, 104, 80, 56, 32, 8 }
 dx = { -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4 }
 y_speeds = { 0.2, 0.3, 0.4, 0.5, 1, 0.5, 0.4, 0.3, 0.2 }
+y_speeds = { 0.2, 0.3, 0.4, 0.5, 1, 0.5, 0.4, 0.3, 0.2 }
+
+dx = { -0.7, -0.6, -0.5, -0.4, 0, 0.4, 0.5, 0.6, 0.7 }
+
+
+
+wall_t = 60
+
 
 function _init()
     p1 = {
@@ -18,8 +26,8 @@ function _init()
         fake_frame = 0,
         update = function(self)
             self.facing_right = self.frame > 5
-            self.y += y_speeds[p1.frame]
-            p1.x = mid(16, p1.x + dx[p1.frame], 64)
+            --self.y += y_speeds[p1.frame]
+            p1.x = mid(0, p1.x + (dx[p1.frame]), 100)
         end,
         update_img = function(self, dir)
             if dir == "l" then
@@ -44,6 +52,12 @@ function _update()
     if p1.frame >= 6 then
         p1.facing_right = true
     end
+    update_walls()
+    wall_t-=1
+    if wall_t <= 0 then
+        spawn_wall()
+        wall_t=60
+    end
 end
 
 -- 104, 80, 56, 32, 8
@@ -55,8 +69,8 @@ function _draw()
     sspr(frame_x[p1.frame], 0, 24, 24, p1.x, p1.y, 24, 24, p1.facing_right)
     pal()
 
-
-    print(p1.frame, 8, 8, 7)
+    draw_walls()
+    print(#walls, 8, 8, 7)
 end
 
 function check_inputs()
@@ -64,7 +78,7 @@ function check_inputs()
         if g_state == gamestates.title then
             g_state = gamestates.game
         elseif g_state == gamestates.game then
-
+            spawn_wall()
         elseif g_state == gamestates.gameover then
 
         end
