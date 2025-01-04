@@ -4,7 +4,7 @@ ring.__index=ring
 local rings = {}
 
 local x_pos = {0+2, 48,96-2}
-local colors = {3,8,12}
+local colors = {11,8,10}
 
 local function add_ring(x, c)
     local _r=setmetatable({},ring)

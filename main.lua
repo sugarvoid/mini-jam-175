@@ -11,8 +11,9 @@ y_speeds = { 0.2, 0.3, 0.4, 0.5, 1, 0.5, 0.4, 0.3, 0.2 }
 dx = { -1.7, -1.2, -1, -0.9, 0, 0.9, 1, 1.2, 1.7 }
 score = 0
 needle_x = 35
-needle_speed = 0.1
+needle_speed = 0.4
 good_color = 0
+dis_left = 900
 
 -- green 32-52
 -- red 53-73
@@ -21,10 +22,11 @@ good_color = 0
 ranges = {
     green = { 32, 52 },
     red = { 53, 73 },
-    blue = { 74, 94 }
+    yellow = { 74, 94 }
 }
 
 ring_t = 60
+needle_t = (rnd({8,10,15}) * 30)
 
 player = {
     x = 48,
@@ -38,7 +40,7 @@ player = {
         player.x = mid(0, player.x + (dx[player.frame]), 100)
     end,
     draw = function()
-        pal(14, 5)
+        pal(14, 0)
         sspr(frame_x[player.frame], 0, 24, 24, player.x, player.y, 24, 24, player.facing_right)
         pal()
     end,
@@ -48,17 +50,24 @@ hud = {
     draw = function(self)
         --rectfill(20, 1, 27, 7, 3)
         rectfill(0, 0, 128, 10, 0)
-        rectfill(32, 1, 32 + 20, 1 + 5, 3)
+        rectfill(32, 1, 32 + 20, 1 + 5, 11)
         rectfill(53, 1, 53 + 20, 1 + 5, 8)
-        rectfill(74, 1, 74 + 20, 1 + 5, 12)
+        rectfill(74, 1, 74 + 20, 1 + 5, 10)
         line(needle_x, 0, needle_x, 7, 7)
-        print(needle_x, 8, 2, 7)
+        print(score, 8, 2, get_current_color())
+        print(flr(dis_left).."ft", 100, 2, get_current_color())
     end,
 }
 
 
 function _init()
 
+end
+
+
+function reverse_needle_dir()
+    sfx(0)
+    needle_speed *= -1
 end
 
 function _update()
@@ -70,29 +79,37 @@ function _update()
 
     needle_x += needle_speed
     if needle_x >= 94 or needle_x <= 32 then
-        needle_speed *= -1
+        reverse_needle_dir()
     end
-
+    -- FIXME: something is not right
+    dis_left-= ((abs(y_speeds[player.frame])) / 10)
     update_rings()
     ring_t -= 1
     if ring_t <= 0 then
         spawn_rings()
         ring_t = 60
     end
+    --needle_t-=1
+    --if needle_t <= 0 then
+    --    reverse_needle_dir()
+    --    needle_t = (rnd({8,10,15}) * 30)
+    --end
 end
 
 function get_current_color()
     if in_range(needle_x, ranges.green[1], ranges.green[2]) then
-        return 3
+        return 11
     elseif in_range(needle_x, ranges.red[1], ranges.red[2]) then
         return 8
+    elseif in_range(needle_x, ranges.yellow[1], ranges.yellow[2]) then
+        return 10
     else
-        return 12
+        return 0
     end
 end
 
 function _draw()
-    cls(0)
+    cls(12)
     --map()
 
     draw_rings_back()
@@ -162,7 +179,8 @@ function shuffle_table(t)
 end
 
 function in_range(val, min, high)
-    if val >= min and val <= high then
+    if ceil(val) >= min and flr(val) <= high then
         return true
     end
 end
+
