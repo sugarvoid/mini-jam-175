@@ -1,14 +1,12 @@
-
-
-ring={}
+local ring={}
 ring.__index=ring
 
-rings = {}
+local rings = {}
 
-x_pos = {0+2, 48,96-2}
-colors = {3,8,12}
+local x_pos = {0+2, 48,96-2}
+local colors = {3,8,12}
 
-function add_ring(x, c)
+local function add_ring(x, c)
     local _r=setmetatable({},ring)
     _r.x=x
     _r.y=128
@@ -20,7 +18,6 @@ function add_ring(x, c)
 end
 
 function spawn_rings()
-
     shuffle_table(x_pos)
     shuffle_table(colors)
 
@@ -30,7 +27,7 @@ end
 
 function ring:update()
     if self.y >= -12 then
-        self.y -= (y_speeds[p1.frame] + 1.3)
+        self.y -= (y_speeds[player.frame] + 1.3)
     else
         del(rings,self)
     end
@@ -38,19 +35,17 @@ end
 
 function ring:on_hit()
     del(objects.front,self)
-    p1:take_damage()
+    player:take_damage()
 end
 
 function ring:draw_front()
     pal(6, self.color)
     sspr( 24, 28, 32, 4, self.x, self.y, 32, 4)
-    --sspr( 24, 28, 32, 4, self.x, self.y-4, 32, 4, false, true)
     pal()
 end
 
 function ring:draw_back()
     pal(6, self.color)
-    --sspr( 24, 28, 32, 4, self.x, self.y, 32, 4)
     sspr( 24, 28, 32, 4, self.x, self.y-4, 32, 4, false, true)
     pal()
 end
@@ -58,13 +53,11 @@ end
 function update_rings()
     for w in all(rings) do
         w:update()
-        --l:draw()
     end
 end
 
 function draw_rings_back()
     for w in all(rings) do
-  
         w:draw_back()
     end
 end
@@ -72,6 +65,5 @@ end
 function draw_rings_front()
     for w in all(rings) do
         w:draw_front()
-
     end
 end
