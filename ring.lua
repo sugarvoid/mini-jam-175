@@ -23,6 +23,7 @@ function spawn_rings()
 
     add_ring(x_pos[1], colors[1])
     add_ring(x_pos[2], colors[2])
+    --add_ring(x_pos[3], colors[3])
 end
 
 function ring:update()
