@@ -34,15 +34,19 @@ player = {
     facing_right = false,
     frame = 1,
     fake_frame = 0,
+    hitbox={x=0,y=0},
     update = function(self)
         self.facing_right = self.frame > 5
         --self.y += y_speeds[p1.frame]
         player.x = mid(0, player.x + (dx[player.frame]), 100)
+        self.hitbox.x = self.x+24/2
+        self.hitbox.y = self.y+24/2
     end,
-    draw = function()
+    draw = function(self)
         pal(14, 0)
         sspr(frame_x[player.frame], 0, 24, 24, player.x, player.y, 24, 24, player.facing_right)
         pal()
+        pset(self.hitbox.x , self.hitbox.y, 8)
     end,
 }
 
@@ -77,12 +81,15 @@ function _update()
         player.facing_right = true
     end
 
+    
+
     needle_x += needle_speed
     if needle_x >= 94 or needle_x <= 32 then
         reverse_needle_dir()
     end
     -- FIXME: something is not right
     dis_left-= ((abs(y_speeds[player.frame])) / 10)
+    update_flags()
     update_rings()
     ring_t -= 1
     if ring_t <= 0 then
@@ -94,6 +101,16 @@ function _update()
     --    reverse_needle_dir()
     --    needle_t = (rnd({8,10,15}) * 30)
     --end
+    for r in all(rings) do
+        if is_pix_over_rect(r.hitbox, player.hitbox.x, player.hitbox.y) then
+            if get_current_color() == r.color then
+        --if is_pixel_on_line(player.hitbox.x, player.hitbox.y, f.line.x1, f.line.y1, f.line.x2, f.line.y2) then
+                sfx(1)
+                score+=10
+            end
+            --print_debug(r.color)
+        end
+    end
 end
 
 function get_current_color()
@@ -117,7 +134,7 @@ function _draw()
     player:draw()
 
 
-
+    draw_flags()
     draw_rings_front()
 
     
@@ -129,7 +146,6 @@ function check_inputs()
         if g_state == gamestates.title then
             g_state = gamestates.game
         elseif g_state == gamestates.game then
-            spawn_walls()
         elseif g_state == gamestates.gameover then
 
         end
@@ -184,3 +200,30 @@ function in_range(val, min, high)
     end
 end
 
+-- Function to calculate the perpendicular distance from a point (px, py) to a line (x1, y1) -> (x2, y2)
+function point_to_line_distance(px, py, x1, y1, x2, y2)
+    local numerator = abs((y2 - y1) * px - (x2 - x1) * py + x2 * y1 - y2 * x1)
+    local denominator = sqrt((y2 - y1)^2 + (x2 - x1)^2)
+    return numerator / denominator
+end
+
+-- Function to check if the pixel is near the line
+function is_pixel_on_line(px, py, x1, y1, x2, y2)
+    local distance = point_to_line_distance(px, py, x1, y1, x2, y2)
+    print_debug(distance)
+    return distance < 1  -- Allow a small tolerance for "closeness" to the line
+end
+
+
+function print_debug(str)
+    printh("debug: " .. str, 'debug.txt')
+end
+
+
+function is_pix_over_rect(rect, px, py)
+	if (rect.x <= px and rect.x + rect.w >= px) and (rect.y <= py and rect.y + rect.h >= py) then
+		return true
+	else
+		return false
+	end
+end
