@@ -3,79 +3,68 @@ local gamestates = {
     game = 3,
     gameover = 5
 }
-local title = "mini jam 175"
-local sub_title = "gravity"
+local title = "plane's descent"
+local sub_title = "mini jam 175"
 local g_state = gamestates.title
+
 frame_x = { 8, 32, 56, 80, 104, 80, 56, 32, 8 }
---dx = { -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4 }
---y_speeds = { 0.2, 0.3, 0.4, 0.5, 1, 0.5, 0.4, 0.3, 0.2 }
 y_speeds = { 0.2, 0.3, 0.4, 0.5, 1.5, 0.5, 0.4, 0.3, 0.2 }
 dx = { -2.5, -2, -1.5, -1, 0, 1, 1.5, 2, 2.5 }
 score = 0
-needle_x = 35
-needle_speed = 0.4
-good_color = 0
-dis_left = 100
+local needle_x = 35
+local needle_speed = 0.4
+local dis_left = 100
 
--- green 32-52
--- red 53-73
---blue  74-94
-
-ranges = {
+local ranges = {
     green = { 32, 52 },
     red = { 53, 73 },
     yellow = { 74, 94 }
 }
 
 ring_t = 60
-needle_t = (rnd({ 8, 10, 15 }) * 30)
 
 player = {
     x = 48,
     y = 12,
     facing_right = false,
     frame = 1,
-    fake_frame = 0,
     hitbox = { x = 0, y = 0, w = 2, h = 2 },
     update = function(self)
         self.facing_right = self.frame > 5
         --self.y += y_speeds[p1.frame]
-        player.x = mid(0, player.x + (dx[player.frame]), 100)
+        self.x = mid(0, self.x + (dx[self.frame]), 100)
         self.hitbox.x = self.x + 24 / 2
         self.hitbox.y = self.y + 24 / 2
 
-        if player.y >= 130 then
+        if self.y >= 130 then
             g_state = gamestates.gameover
         end
     end,
     draw = function(self)
         pal(14, 0)
-        sspr(frame_x[player.frame], 0, 24, 24, player.x, player.y, 24, 24, player.facing_right)
+        sspr(frame_x[self.frame], 0, 24, 24, self.x, self.y, 24, 24, self.facing_right)
         pal()
-        pset(self.hitbox.x, self.hitbox.y, 8)
     end,
 }
 
 hud = {
-    draw = function(self)
-        --rectfill(20, 1, 27, 7, 3)
+    draw = function()
         rectfill(0, 0, 128, 10, 0)
         rectfill(32, 1, 32 + 20, 1 + 5, 11)
         rectfill(53, 1, 53 + 20, 1 + 5, 8)
         rectfill(74, 1, 74 + 20, 1 + 5, 10)
         line(needle_x, 0, needle_x, 7, 7)
-        print(score, 8, 2, get_current_color())
+        --print(score, 8, 2, get_current_color())
         print(flr(dis_left) .. "ft", 100, 2, get_current_color())
     end,
 }
 
 
 function _init()
-
+    reset_game()
 end
 
 function reverse_needle_dir()
-    sfx(0)
     needle_speed *= -1
 end
 
@@ -115,12 +104,17 @@ end
 function draw_title()
     cls(0)
     print(title, hcenter(title), 35, 7)
-    print("press 🅾️ to play" , hcenter("press 🅾️ to play" ), 55, 7)
+    print(sub_title, hcenter(sub_title), 45, 7)
+    print("press 🅾️ to play", hcenter("press 🅾️ to play"), 82, 7)
 end
 
 function draw_gameover()
     cls(0)
-    print("game ove", hcenter("game over"), 35, 7)
+    print("game over", hcenter("game over"), 35, 7)
+    print("score: " .. score .. "/10", hcenter("score: " .. score .. "/10"), 60, 7)
+    if score == 10 then
+        print("perfect!", hcenter("perfect"), 68, 7)
+    end
 end
 
 function draw_game()
@@ -138,8 +132,6 @@ function update_game()
         player.facing_right = true
     end
 
-
-
     needle_x += needle_speed
     if needle_x >= 94 or needle_x <= 32 then
         reverse_needle_dir()
@@ -156,72 +148,53 @@ function update_game()
             ring_t = 60
         end
     end
+
     if flr(dis_left) == 2 then
         add_water()
     end
+
     water:update()
 
-    --needle_t-=1
-    --if needle_t <= 0 then
-    --    reverse_needle_dir()
-    --    needle_t = (rnd({8,10,15}) * 30)
-    --end
     for r in all(rings) do
         if is_colliding(player.hitbox, r.hitbox) then
             if get_current_color() == r.color then
-                --if is_pixel_on_line(player.hitbox.x, player.hitbox.y, f.line.x1, f.line.y1, f.line.x2, f.line.y2) then
                 sfx(1)
-                score += 10
+                score += 1
             else
                 sfx(2)
             end
-            --print_debug(r.color)
-            del(rings, r)
+            r:on_hit()
         end
     end
+end
+
+function reset_game()
+    player.x = 48
+    player.y = 12
+    player.facing_right = false
+    player.frame = 1
+    score = 0
+    needle_x = 35
+    dis_left = 100
+    g_state = gamestates.title
 end
 
 function check_inputs()
     if btnp(🅾️) then
         if g_state == gamestates.title then
             g_state = gamestates.game
-        elseif g_state == gamestates.game then
         elseif g_state == gamestates.gameover then
-            g_state = gamestates.title
+            reset_game()
         end
     end
-    if btnp(❎) then
-        if g_state == gamestates.title then
-
-        elseif g_state == gamestates.game then
-
-        elseif g_state == gamestates.gameover then
-
-        end
-    end
-
-
+ 
     if btnp(➡️) then
-        if g_state == gamestates.title then
-
-
-        elseif g_state == gamestates.game then
-            --needle_x += 1
-            --p1:update_img("r")
+        if g_state == gamestates.game then
             player.frame = mid(1, player.frame + 1, 9)
-            --p1.x += 1.5
-            --p1.frame+=1
-            --p1.f=false
-        elseif g_state == gamestates.gameover then
-
         end
     elseif btnp(⬅️) then
-        if g_state == gamestates.title then
-
-        elseif g_state == gamestates.game then
+        if g_state == gamestates.game then
             player.frame = mid(1, player.frame - 1, 9)
-        elseif g_state == gamestates.gameover then
-
         end
     end
 end

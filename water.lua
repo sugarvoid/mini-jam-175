@@ -15,7 +15,6 @@ water = {
     draw = function(self)
         if self.in_play then
             for i = 0, 12, 1 do
-                --spr(51,self.x+(8*i), self.y)
                 pal(14, 0)
                 sspr(56, 32, 16, 16, self.x + (16 * i), self.y, 16, 16)
                 pal()
