@@ -9,19 +9,19 @@ Gravity<br><br>
 Constant Motion<br>
 
 
-### Gameplay
+## Gameplay
 ![gameplay](https://github.com/sugarvoid/mini-jam-175/blob/main/gameplay.gif)
 <br>
 
-### Cart
+## Cart
 ![cart](https://github.com/sugarvoid/mini-jam-175/blob/main/mini_jam_175.p8.png)
 
 
-### Goal :dart:
+## Goal :dart:
 
 -   Navigate through the appropriate flags based on the bar on top.
 
-### Controls :joystick:
+## Controls :joystick:
 
 |  Key   |   Action   |
 | :----: | :--------: |
