@@ -7,7 +7,7 @@ local g_state = gamestates.game
 frame_x = { 8, 32, 56, 80, 104, 80, 56, 32, 8 }
 --dx = { -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4 }
 --y_speeds = { 0.2, 0.3, 0.4, 0.5, 1, 0.5, 0.4, 0.3, 0.2 }
-y_speeds = { 0.2, 0.3, 0.4, 0.5, 1, 0.5, 0.4, 0.3, 0.2 }
+y_speeds = { 0.2, 0.3, 0.4, 0.5, 1.5, 0.5, 0.4, 0.3, 0.2 }
 dx = { -2.5, -2, -1.5, -1, 0, 1, 1.5, 2, 2.5 }
 score = 0
 needle_x = 35
@@ -34,7 +34,7 @@ player = {
     facing_right = false,
     frame = 1,
     fake_frame = 0,
-    hitbox={x=0,y=0},
+    hitbox={x=0,y=0,w=2,h=2},
     update = function(self)
         self.facing_right = self.frame > 5
         --self.y += y_speeds[p1.frame]
@@ -102,13 +102,17 @@ function _update()
     --    needle_t = (rnd({8,10,15}) * 30)
     --end
     for r in all(rings) do
-        if is_pix_over_rect(r.hitbox, player.hitbox.x, player.hitbox.y) then
+        if is_colliding(player.hitbox, r.hitbox) then
             if get_current_color() == r.color then
         --if is_pixel_on_line(player.hitbox.x, player.hitbox.y, f.line.x1, f.line.y1, f.line.x2, f.line.y2) then
                 sfx(1)
                 score+=10
+                
+                else
+                    sfx(2)
             end
             --print_debug(r.color)
+            del(rings, r)
         end
     end
 end
@@ -127,17 +131,9 @@ end
 
 function _draw()
     cls(12)
-    --map()
-
-    draw_rings_back()
-
     player:draw()
-
-
     draw_flags()
-    draw_rings_front()
-
-    
+    draw_rings()
     hud:draw()
 end
 
@@ -200,30 +196,16 @@ function in_range(val, min, high)
     end
 end
 
--- Function to calculate the perpendicular distance from a point (px, py) to a line (x1, y1) -> (x2, y2)
-function point_to_line_distance(px, py, x1, y1, x2, y2)
-    local numerator = abs((y2 - y1) * px - (x2 - x1) * py + x2 * y1 - y2 * x1)
-    local denominator = sqrt((y2 - y1)^2 + (x2 - x1)^2)
-    return numerator / denominator
-end
-
--- Function to check if the pixel is near the line
-function is_pixel_on_line(px, py, x1, y1, x2, y2)
-    local distance = point_to_line_distance(px, py, x1, y1, x2, y2)
-    print_debug(distance)
-    return distance < 1  -- Allow a small tolerance for "closeness" to the line
-end
-
 
 function print_debug(str)
     printh("debug: " .. str, 'debug.txt')
 end
 
 
-function is_pix_over_rect(rect, px, py)
-	if (rect.x <= px and rect.x + rect.w >= px) and (rect.y <= py and rect.y + rect.h >= py) then
-		return true
-	else
-		return false
-	end
+
+function is_colliding(a, b)
+    return (a.x < b.x + b.w and 
+    a.x + a.w > b.x and 
+    a.y < b.y + b.h and 
+    b.y < a.y + a.h)
 end

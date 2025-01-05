@@ -28,14 +28,14 @@ function spawn_rings()
     add_ring(x_pos[1], colors[1])
     add_ring(x_pos[2], colors[2])
     
-    --add_ring(x_pos[3], colors[3])
+    add_ring(x_pos[3], colors[3])
 end
 
 function ring:update()
     if self.y >= -12 then
         self.y -= (y_speeds[player.frame] + 1.3)
 
-        self.hitbox.x=self.x+1
+        self.hitbox.x=self.x
         self.hitbox.y=self.y+5
 
     else
@@ -49,7 +49,7 @@ function ring:on_hit()
 
 end
 
-function ring:draw_front()
+function ring:draw()
     pal(6, self.color)
     pal(14, 0)
     --sspr( 24, 28, 32, 4, self.x, self.y, 32, 4)
@@ -66,11 +66,6 @@ function ring:draw_front()
     --line(self.x+1, self.y+5, self.x+30, self.y+5, 6)
 end
 
-function ring:draw_back()
-    pal(6, self.color)
-    --sspr( 24, 28, 32, 4, self.x, self.y-4, 32, 4, false, true)
-    pal()
-end
 
 function update_rings()
     for w in all(rings) do
@@ -78,14 +73,9 @@ function update_rings()
     end
 end
 
-function draw_rings_back()
+function draw_rings()
     for w in all(rings) do
-        w:draw_back()
+        w:draw()
     end
 end
 
-function draw_rings_front()
-    for w in all(rings) do
-        w:draw_front()
-    end
-end
