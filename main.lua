@@ -115,6 +115,7 @@ end
 function draw_title()
     cls(0)
     print(title, hcenter(title), 35, 7)
+    print("press 🅾️ to play" , hcenter("press 🅾️ to play" ), 55, 7)
 end
 
 function draw_gameover()
@@ -145,6 +146,7 @@ function update_game()
     end
     -- FIXME: something is not right
     dis_left -= ((abs(y_speeds[player.frame])) / 10)
+    dis_left = mid(0, dis_left, 100)
     update_flags()
     update_rings()
     if dis_left > 10 then
@@ -154,7 +156,7 @@ function update_game()
             ring_t = 60
         end
     end
-    if flr(dis_left) == 10 then
+    if flr(dis_left) == 2 then
         add_water()
     end
     water:update()

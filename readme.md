@@ -18,7 +18,7 @@
 
 ### Goal :dart:
 
--   Navigate through the appropriate ring based on the bar on top.
+-   Navigate through the appropriate flags based on the bar on top.
 
 ### Controls :joystick:
 
