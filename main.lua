@@ -3,7 +3,9 @@ local gamestates = {
     game = 3,
     gameover = 5
 }
-local g_state = gamestates.game
+local title = "mini jam 175"
+local sub_title = "gravity"
+local g_state = gamestates.title
 frame_x = { 8, 32, 56, 80, 104, 80, 56, 32, 8 }
 --dx = { -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4 }
 --y_speeds = { 0.2, 0.3, 0.4, 0.5, 1, 0.5, 0.4, 0.3, 0.2 }
@@ -13,7 +15,7 @@ score = 0
 needle_x = 35
 needle_speed = 0.4
 good_color = 0
-dis_left = 900
+dis_left = 100
 
 -- green 32-52
 -- red 53-73
@@ -26,7 +28,7 @@ ranges = {
 }
 
 ring_t = 60
-needle_t = (rnd({8,10,15}) * 30)
+needle_t = (rnd({ 8, 10, 15 }) * 30)
 
 player = {
     x = 48,
@@ -34,19 +36,23 @@ player = {
     facing_right = false,
     frame = 1,
     fake_frame = 0,
-    hitbox={x=0,y=0,w=2,h=2},
+    hitbox = { x = 0, y = 0, w = 2, h = 2 },
     update = function(self)
         self.facing_right = self.frame > 5
         --self.y += y_speeds[p1.frame]
         player.x = mid(0, player.x + (dx[player.frame]), 100)
-        self.hitbox.x = self.x+24/2
-        self.hitbox.y = self.y+24/2
+        self.hitbox.x = self.x + 24 / 2
+        self.hitbox.y = self.y + 24 / 2
+
+        if player.y >= 130 then
+            g_state = gamestates.gameover
+        end
     end,
     draw = function(self)
         pal(14, 0)
         sspr(frame_x[player.frame], 0, 24, 24, player.x, player.y, 24, 24, player.facing_right)
         pal()
-        pset(self.hitbox.x , self.hitbox.y, 8)
+        pset(self.hitbox.x, self.hitbox.y, 8)
     end,
 }
 
@@ -59,7 +65,7 @@ hud = {
         rectfill(74, 1, 74 + 20, 1 + 5, 10)
         line(needle_x, 0, needle_x, 7, 7)
         print(score, 8, 2, get_current_color())
-        print(flr(dis_left).."ft", 100, 2, get_current_color())
+        print(flr(dis_left) .. "ft", 100, 2, get_current_color())
     end,
 }
 
@@ -68,7 +74,6 @@ function _init()
 
 end
 
-
 function reverse_needle_dir()
     sfx(0)
     needle_speed *= -1
@@ -76,44 +81,22 @@ end
 
 function _update()
     check_inputs()
-    player:update()
-    if player.frame >= 6 then
-        player.facing_right = true
-    end
+    if g_state == gamestates.title then
 
-    
+    elseif g_state == gamestates.game then
+        update_game()
+    elseif g_state == gamestates.gameover then
 
-    needle_x += needle_speed
-    if needle_x >= 94 or needle_x <= 32 then
-        reverse_needle_dir()
     end
-    -- FIXME: something is not right
-    dis_left-= ((abs(y_speeds[player.frame])) / 10)
-    update_flags()
-    update_rings()
-    ring_t -= 1
-    if ring_t <= 0 then
-        spawn_rings()
-        ring_t = 60
-    end
-    --needle_t-=1
-    --if needle_t <= 0 then
-    --    reverse_needle_dir()
-    --    needle_t = (rnd({8,10,15}) * 30)
-    --end
-    for r in all(rings) do
-        if is_colliding(player.hitbox, r.hitbox) then
-            if get_current_color() == r.color then
-        --if is_pixel_on_line(player.hitbox.x, player.hitbox.y, f.line.x1, f.line.y1, f.line.x2, f.line.y2) then
-                sfx(1)
-                score+=10
-                
-                else
-                    sfx(2)
-            end
-            --print_debug(r.color)
-            del(rings, r)
-        end
+end
+
+function _draw()
+    if g_state == gamestates.title then
+        draw_title()
+    elseif g_state == gamestates.game then
+        draw_game()
+    elseif g_state == gamestates.gameover then
+        draw_gameover()
     end
 end
 
@@ -129,12 +112,71 @@ function get_current_color()
     end
 end
 
-function _draw()
+function draw_title()
+    cls(0)
+    print(title, hcenter(title), 35, 7)
+end
+
+function draw_gameover()
+    cls(0)
+    print("game ove", hcenter("game over"), 35, 7)
+end
+
+function draw_game()
     cls(12)
     player:draw()
     draw_flags()
     draw_rings()
+    water:draw()
     hud:draw()
+end
+
+function update_game()
+    player:update()
+    if player.frame >= 6 then
+        player.facing_right = true
+    end
+
+
+
+    needle_x += needle_speed
+    if needle_x >= 94 or needle_x <= 32 then
+        reverse_needle_dir()
+    end
+    -- FIXME: something is not right
+    dis_left -= ((abs(y_speeds[player.frame])) / 10)
+    update_flags()
+    update_rings()
+    if dis_left > 10 then
+        ring_t -= 1
+        if ring_t <= 0 then
+            spawn_rings()
+            ring_t = 60
+        end
+    end
+    if flr(dis_left) == 10 then
+        add_water()
+    end
+    water:update()
+
+    --needle_t-=1
+    --if needle_t <= 0 then
+    --    reverse_needle_dir()
+    --    needle_t = (rnd({8,10,15}) * 30)
+    --end
+    for r in all(rings) do
+        if is_colliding(player.hitbox, r.hitbox) then
+            if get_current_color() == r.color then
+                --if is_pixel_on_line(player.hitbox.x, player.hitbox.y, f.line.x1, f.line.y1, f.line.x2, f.line.y2) then
+                sfx(1)
+                score += 10
+            else
+                sfx(2)
+            end
+            --print_debug(r.color)
+            del(rings, r)
+        end
+    end
 end
 
 function check_inputs()
@@ -143,7 +185,7 @@ function check_inputs()
             g_state = gamestates.game
         elseif g_state == gamestates.game then
         elseif g_state == gamestates.gameover then
-
+            g_state = gamestates.title
         end
     end
     if btnp(❎) then
@@ -196,16 +238,28 @@ function in_range(val, min, high)
     end
 end
 
-
 function print_debug(str)
     printh("debug: " .. str, 'debug.txt')
 end
 
-
-
 function is_colliding(a, b)
-    return (a.x < b.x + b.w and 
-    a.x + a.w > b.x and 
-    a.y < b.y + b.h and 
-    b.y < a.y + a.h)
+    return (a.x < b.x + b.w and
+        a.x + a.w > b.x and
+        a.y < b.y + b.h and
+        b.y < a.y + a.h)
+end
+
+function hcenter(s)
+    -- screen center minus the
+    -- string length times the
+    -- pixels in a char's width,
+    -- cut in half
+    return 64 - #s * 2
+end
+
+function vcenter(s)
+    -- screen center minus the
+    -- string height in pixels,
+    -- cut in half
+    return 61
 end
