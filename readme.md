@@ -1,11 +1,12 @@
 
 
 ## Game Jam
-- [Mini Jam 175](https://itch.io/jam/mini-jam-175-gravity)
-## Theme
-- Gravity 
-## Limitation
-- Constant Motion
+**Title**<br>
+[Mini Jam 175](https://itch.io/jam/mini-jam-175-gravity)<br><br>
+**Theme**<br>
+Gravity<br><br>
+**Limitation**<br>
+Constant Motion<br>
 
 
 ### Gameplay
