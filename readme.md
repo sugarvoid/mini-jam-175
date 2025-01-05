@@ -9,11 +9,11 @@
 
 
 ### Gameplay
-![gameplay](https://github.com/sugarvoid/mini-jam/blob/master/gameplay.gif)
+![gameplay](https://github.com/sugarvoid/mini-jam-175/blob/main/gameplay.gif)
 <br>
 
 ### Cart
-![cart](https://github.com/sugarvoid/mini-jam/blob/master/mini_jam_175.p8.png)
+![cart](https://github.com/sugarvoid/mini-jam-175/blob/main/mini_jam_175.p8.png)
 
 
 ### Goal :dart:
