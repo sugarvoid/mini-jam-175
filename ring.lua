@@ -28,7 +28,7 @@ function spawn_rings()
     shuffle_table(x_pos)
     shuffle_table(colors)
 
-    R_COUNT+=1
+    flags_passed+=1
 
     add_ring(x_pos[1], colors[1])
     add_ring(x_pos[2], colors[2])

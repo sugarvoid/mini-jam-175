@@ -6,6 +6,7 @@ local gamestates = {
 local title = "plane's descent"
 local sub_title = "mini jam 175"
 local g_state = gamestates.title
+poke(0x5f5c, 255)
 
 frame_x = { 8, 32, 56, 80, 104, 80, 56, 32, 8 }
 y_speeds = { 0.2, 0.3, 0.4, 0.5, 1.5, 0.5, 0.4, 0.3, 0.2 }
@@ -14,6 +15,7 @@ score = 0
 local needle_x = 35
 local needle_speed = 0.4
 local dis_left = 100
+local flags_passed = 0
 
 local ranges = {
     green = { 32, 52 },
@@ -25,9 +27,11 @@ ring_t = 60
 
 player = {
     x = 48,
-    y = 12,
+    y = 10,
     facing_right = false,
     frame = 1,
+    x1 = 0,
+    
     hitbox = { x = 0, y = 0, w = 2, h = 2 },
     update = function(self)
         self.facing_right = self.frame > 5
@@ -48,14 +52,27 @@ player = {
 }
 
 hud = {
-    draw = function()
-        rectfill(0, 0, 128, 10, 0)
-        rectfill(32, 1, 32 + 20, 1 + 5, 11)
-        rectfill(53, 1, 53 + 20, 1 + 5, 8)
-        rectfill(74, 1, 74 + 20, 1 + 5, 10)
-        line(needle_x, 0, needle_x, 7, 7)
+    bar_y1 = 128-7,
+    draw = function(self)
+        --rectfill(0, 0, 128, 10, 0)
+        --rectfill(32, 1, 32 + 20, 1 + 5, 11)
+        --rectfill(53, 1, 53 + 20, 1 + 5, 8)
+        --rectfill(74, 1, 74 + 20, 1 + 5, 10)
+        --line(needle_x, self.bar_y1-2, needle_x, self.bar_y1+7, 7)
         --print(score, 8, 2, get_current_color())
-        print(flr(dis_left) .. "ft", 100, 2, get_current_color())
+        --print(flr(dis_left) .. "ft", 100, self.bar_y1, get_current_color())
+
+
+        rectfill(0, self.bar_y1-2, 128, 128, 0)
+        rectfill(32, self.bar_y1, 32 + 20, self.bar_y1 + 5, 11)
+        rectfill(53, self.bar_y1, 53 + 20, self.bar_y1 + 5, 8)
+        rectfill(74, self.bar_y1, 74 + 20, self.bar_y1 + 5, 10)
+        line(needle_x, self.bar_y1-2, needle_x, self.bar_y1+7, 7)
+        --print(score, 8, 2, get_current_color())
+        print(flr(dis_left) .. "ft", 100, self.bar_y1, get_current_color())
+
+
+
     end,
 }
 
@@ -111,8 +128,8 @@ end
 function draw_gameover()
     cls(0)
     print("game over", hcenter("game over"), 35, 7)
-    print("score: " .. score .. "/10", hcenter("score: " .. score .. "/10"), 60, 7)
-    if score == 10 then
+    print("score: " .. score .. "/"..flags_passed, hcenter("score: " .. score .. "/10"), 60, 7)
+    if score == flags_passed then
         print("perfect!", hcenter("perfect"), 68, 7)
     end
 end
@@ -145,6 +162,7 @@ function update_game()
         ring_t -= 1
         if ring_t <= 0 then
             spawn_rings()
+            
             ring_t = 60
         end
     end
@@ -170,7 +188,8 @@ end
 
 function reset_game()
     player.x = 48
-    player.y = 12
+    flags_passed = 0
+    player.y = 2
     player.facing_right = false
     player.frame = 1
     score = 0

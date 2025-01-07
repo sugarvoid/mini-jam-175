@@ -19,7 +19,7 @@ Constant Motion<br>
 
 ## Goal :dart:
 
--   Navigate through the appropriate flags based on the bar on top.
+-   Navigate through the appropriate flags based on the bar on bottom.
 
 ## Controls :joystick:
 
