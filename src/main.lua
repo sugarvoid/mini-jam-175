@@ -12,8 +12,8 @@ frame_x = { 8, 32, 56, 80, 104, 80, 56, 32, 8 }
 y_speeds = { 0.2, 0.3, 0.4, 0.5, 1.5, 0.5, 0.4, 0.3, 0.2 }
 dx = { -2.5, -2, -1.5, -1, 0, 1, 1.5, 2, 2.5 }
 score = 0
-local needle_x = 35
-local needle_speed = 0.4
+--local needle_x = 35
+--local needle_speed = 0.4
 local dis_left = 100
 local flags_passed = 0
 
@@ -25,13 +25,29 @@ local ranges = {
 
 ring_t = 60
 
+needle = {
+    x=35,
+    y=0,
+    speed=0.4,
+    update=function(self)
+        self.x += self.speed
+        if self.x >= 94 or self.x <= 32 then
+            self:reverse_dir()
+        end
+    end,
+    reverse_dir=function(self)
+        self.speed *= -1
+    end,
+    draw=function(self)
+        line(self.x, 121-1, self.x, 121+7, 7)
+    end
+}
+
 player = {
     x = 48,
     y = 10,
     facing_right = false,
     frame = 1,
-    x1 = 0,
-    
     hitbox = { x = 0, y = 0, w = 2, h = 2 },
     update = function(self)
         self.facing_right = self.frame > 5
@@ -49,6 +65,12 @@ player = {
         sspr(frame_x[self.frame], 0, 24, 24, self.x, self.y, 24, 24, self.facing_right)
         pal()
     end,
+    reset = function(self)
+        self.x = 48
+        self.y = 10
+        self.facing_right = false
+        self.frame = 1
+    end
 }
 
 hud = {
@@ -67,7 +89,7 @@ hud = {
         rectfill(32, self.bar_y1, 32 + 20, self.bar_y1 + 5, 11)
         rectfill(53, self.bar_y1, 53 + 20, self.bar_y1 + 5, 8)
         rectfill(74, self.bar_y1, 74 + 20, self.bar_y1 + 5, 10)
-        line(needle_x, self.bar_y1-2, needle_x, self.bar_y1+7, 7)
+        needle:draw()
         --print(score, 8, 2, get_current_color())
         print(flr(dis_left) .. "ft", 100, self.bar_y1, get_current_color())
 
@@ -81,9 +103,7 @@ function _init()
     reset_game()
 end
 
-function reverse_needle_dir()
-    needle_speed *= -1
-end
+
 
 function _update()
     check_inputs()
@@ -107,11 +127,11 @@ function _draw()
 end
 
 function get_current_color()
-    if in_range(needle_x, ranges.green[1], ranges.green[2]) then
+    if in_range(needle.x, ranges.green[1], ranges.green[2]) then
         return 11
-    elseif in_range(needle_x, ranges.red[1], ranges.red[2]) then
+    elseif in_range(needle.x, ranges.red[1], ranges.red[2]) then
         return 8
-    elseif in_range(needle_x, ranges.yellow[1], ranges.yellow[2]) then
+    elseif in_range(needle.x, ranges.yellow[1], ranges.yellow[2]) then
         return 10
     else
         return 0
@@ -149,10 +169,7 @@ function update_game()
         player.facing_right = true
     end
 
-    needle_x += needle_speed
-    if needle_x >= 94 or needle_x <= 32 then
-        reverse_needle_dir()
-    end
+    needle:update()
     -- FIXME: something is not right
     dis_left -= ((abs(y_speeds[player.frame])) / 10)
     dis_left = mid(0, dis_left, 100)
@@ -187,13 +204,16 @@ function update_game()
 end
 
 function reset_game()
-    player.x = 48
+    player:reset()
+    water:reset()
+    --player.x = 48
     flags_passed = 0
-    player.y = 2
-    player.facing_right = false
-    player.frame = 1
+    --player.y = 2
+    --player.facing_right = false
+    --player.frame = 1
     score = 0
-    needle_x = 35
+    --needle_x = 35
+    needle.x=35
     dis_left = 100
     g_state = gamestates.title
 end

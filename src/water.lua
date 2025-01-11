@@ -22,6 +22,10 @@ water = {
             end
         end
     end,
+    reset=function(self)
+        self.y = 130
+        self.in_play = false
+    end
 }
 
 
@@ -30,5 +34,7 @@ function add_water()
     water.in_play = true
     sfx(3)
 end
+
+
 
 

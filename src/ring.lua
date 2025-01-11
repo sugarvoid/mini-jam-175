@@ -3,7 +3,7 @@ ring.__index = ring
 
 rings = {}
 
-R_COUNT = 0
+--R_COUNT = 0
 
 local x_pos = { 0 + 2, 48, 96 - 2 }
 local colors = { 11, 8, 10 }

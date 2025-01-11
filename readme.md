@@ -14,7 +14,7 @@ Constant Motion<br>
 <br>
 
 ## Cart
-![cart](https://github.com/sugarvoid/mini-jam-175/blob/main/mini_jam_175.p8.png)
+![cart](https://github.com/sugarvoid/mini-jam-175/blob/main/planes_descent.p8.png)
 
 
 ## Goal :dart:
