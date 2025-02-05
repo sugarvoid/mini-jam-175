@@ -3,47 +3,36 @@ local gamestates = {
     game = 3,
     gameover = 5
 }
+
+local g_state = gamestates.title
 local title = "plane's descent"
 local sub_title = "mini jam 175"
-local g_state = gamestates.title
-poke(0x5f5c, 255)
-
-frame_x = { 8, 32, 56, 80, 104, 80, 56, 32, 8 }
-y_speeds = { 0.2, 0.3, 0.4, 0.5, 1.5, 0.5, 0.4, 0.3, 0.2 }
-dx = { -2.5, -2, -1.5, -1, 0, 1, 1.5, 2, 2.5 }
-score = 0
---local needle_x = 35
---local needle_speed = 0.4
+local frame_x = { 8, 32, 56, 80, 104, 80, 56, 32, 8 }
+local y_speeds = { 0.2, 0.3, 0.4, 0.5, 1.5, 0.5, 0.4, 0.3, 0.2 }
+local dx = { -2.5, -2, -1.5, -1, 0, 1, 1.5, 2, 2.5 }
+local score = 0
 local dis_left = 100
 local flags_passed = 0
-
+local x_pos = { 0 + 2, 48, 96 - 2 }
+local colors = { 11, 8, 10 }
 local ranges = {
     green = { 32, 52 },
     red = { 53, 73 },
     yellow = { 74, 94 }
 }
+local sprites = { 56, 72, 88 }
+local ring_t = 60
 
-ring_t = 60
+-- Classes
+local ring = {}
+ring.__index = ring
+local rings = {}
 
-needle = {
-    x=35,
-    y=0,
-    speed=0.4,
-    update=function(self)
-        self.x += self.speed
-        if self.x >= 94 or self.x <= 32 then
-            self:reverse_dir()
-        end
-    end,
-    reverse_dir=function(self)
-        self.speed *= -1
-    end,
-    draw=function(self)
-        line(self.x, 121-1, self.x, 121+7, 7)
-    end
-}
+local flag = {}
+flag.__index = flag
+local flags = {}
 
-player = {
+local player = {
     x = 48,
     y = 10,
     facing_right = false,
@@ -73,37 +62,191 @@ player = {
     end
 }
 
-hud = {
-    bar_y1 = 128-7,
+
+local function add_ring(x, c)
+    local _r = setmetatable({}, ring)
+    _r.x = x
+    _r.y = 140
+    _r.h = 2
+    _r.w = 32
+    _r.color = c
+    _r.line = { x1 = 0, y1 = 0, x2 = 0, y2 = 0 }
+    _r.hitbox = { x = 0, y = 0, w = 30, h = 2 }
+    _r.was_hit = false
+    add_flag(x, c)
+    add_flag(x + 31, c)
+    add(rings, _r)
+end
+
+local function spawn_rings()
+    shuffle_table(x_pos)
+    shuffle_table(colors)
+
+    flags_passed += 1
+
+    add_ring(x_pos[1], colors[1])
+    add_ring(x_pos[2], colors[2])
+    add_ring(x_pos[3], colors[3])
+end
+
+function ring:update()
+    if self.y >= -12 then
+        self.y -= (y_speeds[player.frame] + 1.3)
+        self.hitbox.x = self.x
+        self.hitbox.y = self.y + 5
+    else
+        del(rings, self)
+    end
+end
+
+function ring:on_hit()
+    del(rings, self)
+end
+
+function ring:draw()
+    pal(6, self.color)
+    pal(14, 0)
+    spr(51, self.x, self.y)
+    for i = 1, 3, 1 do
+        spr(51, self.x + (8 * i), self.y)
+    end
+    pset(self.x, self.y + 5, 5)
+    pset(self.x + 31, self.y + 5, 5)
+    pal()
+end
+
+function update_rings()
+    for w in all(rings) do
+        w:update()
+    end
+end
+
+function draw_rings()
+    for w in all(rings) do
+        w:draw()
+    end
+end
+
+function add_flag(x, c)
+    local _f = setmetatable({}, flag)
+    _f.x = x
+    _f.y = 124
+    _f.flip_state = rnd { 1, 2, 3 }
+    _f.move_t = 3
+    _f.color = c
+    add(flags, _f)
+end
+
+function flag:update()
+    if self.y >= -15 then
+        self.y -= (y_speeds[player.frame] + 1.3)
+    else
+        del(flags, self)
+    end
+    self.move_t += 1
+    if (self.move_t % 10 == 0) then
+        self.flip_state += 1
+        if self.flip_state == 4 then
+            self.flip_state = 1
+        end
+    end
+end
+
+function flag:on_hit()
+    del(objects.front, self)
+end
+
+function flag:draw()
+    line(self.x, self.y, self.x, self.y + 20, 0)
+    pal(14, 0)
+    pal(6, self.color)
+    sspr(sprites[self.flip_state], 24, 11, 8, self.x, self.y, 11, 8)
+    pal()
+end
+
+function update_flags()
+    for f in all(flags) do
+        f:update()
+    end
+end
+
+function draw_flags()
+    for f in all(flags) do
+        f:draw()
+    end
+end
+
+local water = {
+    in_play = false,
+    y = 130,
+    x = 0,
+    update = function(self)
+        if self.in_play then
+            if self.y >= 128 - 30 then
+                self.y -= (y_speeds[player.frame] + 1.3)
+            end
+
+            player.y += (y_speeds[player.frame] + 1.5)
+        end
+    end,
     draw = function(self)
-        --rectfill(0, 0, 128, 10, 0)
-        --rectfill(32, 1, 32 + 20, 1 + 5, 11)
-        --rectfill(53, 1, 53 + 20, 1 + 5, 8)
-        --rectfill(74, 1, 74 + 20, 1 + 5, 10)
-        --line(needle_x, self.bar_y1-2, needle_x, self.bar_y1+7, 7)
-        --print(score, 8, 2, get_current_color())
-        --print(flr(dis_left) .. "ft", 100, self.bar_y1, get_current_color())
+        if self.in_play then
+            for i = 0, 12, 1 do
+                pal(14, 0)
+                sspr(56, 32, 16, 16, self.x + (16 * i), self.y, 16, 16)
+                pal()
+                rectfill(0, self.y + 16, 128, self.y + 32, 1)
+            end
+        end
+    end,
+    reset = function(self)
+        self.y = 130
+        self.in_play = false
+    end
+}
+
+function add_water()
+    water.y = 130
+    water.in_play = true
+    sfx(3)
+end
+
+local needle = {
+    x = 35,
+    y = 0,
+    speed = 0.4,
+    update = function(self)
+        self.x += self.speed
+        if self.x >= 94 or self.x <= 32 then
+            self:reverse_dir()
+        end
+    end,
+    reverse_dir = function(self)
+        self.speed *= -1
+    end,
+    draw = function(self)
+        line(self.x, 121 - 1, self.x, 121 + 7, 7)
+    end
+}
 
 
-        rectfill(0, self.bar_y1-2, 128, 128, 0)
+local hud = {
+    bar_y1 = 128 - 7,
+    draw = function(self)
+        rectfill(0, self.bar_y1 - 2, 128, 128, 0)
         rectfill(32, self.bar_y1, 32 + 20, self.bar_y1 + 5, 11)
         rectfill(53, self.bar_y1, 53 + 20, self.bar_y1 + 5, 8)
         rectfill(74, self.bar_y1, 74 + 20, self.bar_y1 + 5, 10)
         needle:draw()
-        --print(score, 8, 2, get_current_color())
         print(flr(dis_left) .. "ft", 100, self.bar_y1, get_current_color())
-
-
-
     end,
 }
 
 
 function _init()
+    poke(0x5f5c, 255)
     reset_game()
 end
-
-
 
 function _update()
     check_inputs()
@@ -148,7 +291,7 @@ end
 function draw_gameover()
     cls(0)
     print("game over", hcenter("game over"), 35, 7)
-    print("score: " .. score .. "/"..flags_passed, hcenter("score: " .. score .. "/10"), 60, 7)
+    print("score: " .. score .. "/" .. flags_passed, hcenter("score: " .. score .. "/10"), 60, 7)
     if score == flags_passed then
         print("perfect!", hcenter("perfect"), 68, 7)
     end
@@ -179,7 +322,7 @@ function update_game()
         ring_t -= 1
         if ring_t <= 0 then
             spawn_rings()
-            
+
             ring_t = 60
         end
     end
@@ -206,14 +349,9 @@ end
 function reset_game()
     player:reset()
     water:reset()
-    --player.x = 48
     flags_passed = 0
-    --player.y = 2
-    --player.facing_right = false
-    --player.frame = 1
     score = 0
-    --needle_x = 35
-    needle.x=35
+    needle.x = 35
     dis_left = 100
     g_state = gamestates.title
 end
@@ -226,7 +364,7 @@ function check_inputs()
             reset_game()
         end
     end
- 
+
     if btnp(➡️) then
         if g_state == gamestates.game then
             player.frame = mid(1, player.frame + 1, 9)

@@ -15,10 +15,6 @@ Constant Motion<br>
 ![gameplay](https://github.com/sugarvoid/mini-jam-175/blob/main/gameplay.gif)
 <br>
 
-## Cart
-![cart](https://github.com/sugarvoid/mini-jam-175/blob/main/planes_descent.p8.png)
-
-
 ## Goal :dart:
 
 -   Navigate through the appropriate flags based on the bar on bottom.
