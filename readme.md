@@ -1,5 +1,5 @@
 
-## [Play in browser](https://www.lexaloffle.com/bbs/?tid=146444)
+## [Play in browser](https://sugarvoid.itch.io/planes-descent)
 
 
 ## Game Jam
